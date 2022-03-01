@@ -75,7 +75,7 @@ console.log(nCube.dimension); // 8 (n rounds to the nearest integer)
 A [Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)
 
 ### [NCube](#ncube).bits
-The binary representation of the n-cube's vertices. Used as keys in the NCube's [bitmap](ncubebitmap).
+The binary representation of the n-cube's vertices. Used as keys in the NCube's [bitmap](#ncubebitmap).
 #### Examples
 ```javascript
 const nCube = new NCube();
@@ -107,7 +107,7 @@ An [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Glo
 ### [NCube](#ncube).bitmap
 A mapping between the binary representation and the [Vertex](#vertex) representation of an n-cube's vertices. All m-face lists *(i.e. vertex-lists, edge-lists, face-lists, etc.)* return references to these vertices.
 
-Because the bitmap is generated and accessed using [NCube.bit](ncubebits) strings, the vertices are always ordered.
+Because the bitmap is generated and accessed using [NCube.bit](#ncubebits) strings, the vertices are always ordered.
 
 #### Examples
 ```javascript
