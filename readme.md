@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/mhollingshead/ncube/main/assets/ncube250.gif?token=GHSAT0AAAAAABK56AHTIEFBKQSG6J4A52JGYQ5XOHQ" width="150" height="150" /><br/>
+    <img src="./assets/ncube250.gif" width="150" height="150" /><br/>
     NCube.js
 </h1>
 
