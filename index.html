@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypercube</title>
+    <style>
+        body {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="ncube"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.1/svg.min.js"></script>
+    <script src="ncube.min.js"></script>
+    <script>
+        const width = 200;
+        const height = 200;
+        const amp = 60;
+        const svg = SVG().addTo(document.querySelector('#ncube')).size(width, height);
+
+        const to2d = point => {
+            const x = 100
+                + (point[0] || 0)
+                + (point[2] / 2 || 0)
+                + (point[3] / 2 || 0)
+            const y = 100
+                + (point[1] || 0)
+                - (point[2] / 2 || 0)
+                + (point[3] / 2 || 0)
+            return [x, y];
+        }
+
+        const n = 4;
+        const nCube = new NCube(n, [-33, 33], {
+            drawEdges: function() {
+                this.edges.forEach((edge, i) => {
+                    const p1 = to2d(edge[0].project(4));
+                    const p2 = to2d(edge[1].project(4));
+                    const line = svg.line(...p1, ...p2).opacity(0.5).stroke({ width: 1, color: '#4287f5' });
+                });
+            },
+            paintFaces: function() {
+                this.faces.forEach(face => {
+                    const p1 = to2d(face[0].project(4));
+                    const p2 = to2d(face[1].project(4));
+                    const p3 = to2d(face[2].project(4));
+                    const p4 = to2d(face[3].project(4));
+                    const polygon = svg.polygon(`${p2.join(',')} ${p4.join(',')} ${p3.join(',')} ${p1.join(',')}`).fill('#4287f5').opacity(0.1).stroke({ width: 1 });
+                })
+            }
+        });
+
+        let angle = 0;
+        const render = setInterval(() => {
+            try {
+                svg.clear();
+                svg.rect(200, 200).fill('white').radius(10);
+                nCube.rotate(angle/100, [0, 2, 3]);
+                nCube.paintFaces();
+                nCube.drawEdges();
+                angle += 5;
+                nCube.reset();
+                if (angle === 630) clearInterval(render)
+            } catch(e) {
+                console.log(e);
+                clearInterval(render);
+            }
+        }, 50);
+        // const edges = {}
+        // const lines = nCube.drawEdges();
+        // for (let i = 1; i <= 36; i++) {
+        //     nCube.rotate(i * 0.02);
+        //     nCube.edges.forEach((edge, j) => {
+        //         if (edges[j]) {
+        //             edges[j].push([[...edge[0]], [...edge[1]]]);
+        //         } else {
+        //             edges[j] = [[[...edge[0]], [...edge[1]]]];
+        //         }
+        //     });
+        //     nCube.reset();
+        // }
+        // for (let i = 0; i < 36; i++) {
+        //     Object.values(lines).forEach((line, j) => {
+        //         const p1 = to2d(edges[j][i][0].slice(4));
+        //         const p2 = to2d(edges[j][i][1].slice(4));
+        //         lines[j].animate({duration: 1000, swing: false}).ease('-').attr({x1: p1[0], y1: p1[1], x2: p2[0], y2: p2[1]});
+        //     })
+        // }
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "ncube",
+  "version": "1.0.0",
+  "description": "A library that dynamically generates geometries of an n-dimensional hypercube (or n-cube).",
+  "main": "ncube.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Hollingshead",
+  "license": "ISC"
+}
