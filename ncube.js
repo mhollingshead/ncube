@@ -1,23 +1,4 @@
-// Utility function for multiplying two matrices
-const multiplyVectors = (m1, m2) => m1.map((r, i) => m2[0].map((_, j) => r.reduce((acc, _, n) => acc + m1[i][n] * m2[n][j], 0)));
-
-// Utility function that converts a decimal number to a padded binary string
-const getBinaryStr = (n, padding = 0) => (new Array(padding).fill("0").join("") + (n >>> 0).toString(2)).slice(-padding);
-
-// Utility function that inserts a character into index ind of string str
-const insertIntoStr = (char, str, ind) => `${str.slice(0, ind)}${char}${str.slice(ind)}`;
-
-// Utility function to get the list of integers from 0 to n-1
-const getNList = n => Object.keys(new Array(n).fill(true)).map(key => parseInt(key));
-
-// Utility function that generates a rotation matrix for some fixed axis, plane, hyperplane, etc.
-const getRotationMatrix = (n, a, fix) => new Array(n).fill(new Array(n).fill(0)).map((r, i) => 
-    r.map((_, j) => 
-        (j === fix && i === fix) ? Math.cos(a) : (j === fix + 1 && i === fix) ? -Math.sin(a) :
-        (j === fix && i === fix + 1) ? Math.sin(a) : (j === fix + 1 && i === fix + 1) ? Math.cos(a) : 
-        (i === j) ? 1 : 0
-    )
-);
+import { multiplyVectors, getBinaryStr, insertIntoStr, getNList, getRotationMatrix } from "./utils/utils.js";
 
 /**
  * Generates all n-length combinations of elements in arr.
@@ -59,7 +40,14 @@ const generateBits = (n, bits = ['0', '1']) => {
  */
 const generateBitmap = (bits, boundingCoordinates) => {
     const bitmap = {};
-    bits.forEach(b => bitmap[b] = new Vertex(...b.split('').map(d => boundingCoordinates[parseInt(d)])));
+    if (bits.length === 2) {
+        bitmap['0'] = new Vertex(1);
+        bitmap['0'].push(boundingCoordinates[0]);
+        bitmap['1'] = new Vertex(1);
+        bitmap['1'].push(boundingCoordinates[1]);
+    } else {
+        bits.forEach(b => bitmap[b] = new Vertex(...b.split('').map(d => boundingCoordinates[parseInt(d)])));
+    }
     return bitmap;
 }
 
@@ -140,11 +128,11 @@ class Vertex extends Array {
  * @param {Object} attr Any additional methods or attributes to be added to the n-cube
  * @returns A new n-cube object
 */
-class NCube {
+export default class NCube {
     constructor(n = 0, boundingCoordinates = [-1, 1], attr = {}) {
-        this.dimension = n;
+        this.dimension = Math.round(n);
         // The binary representations of the n-dimensional hypercube's vertices
-        this.bits = generateBits(n);
+        this.bits = generateBits(this.dimension);
         // The mapping between the hypercube's vertices and their binary representation
         this.bitmap = generateBitmap(this.bits, boundingCoordinates);
         // A backup bitmap used for resetting to default values
@@ -152,9 +140,9 @@ class NCube {
         // The vertices of the hypercube
         this.vertices = this.bits.map(key => this.bitmap[key]);
         // The edges (1-faces) of the hypercube
-        this.edges = generateMFaces(1, n, this.bitmap);
+        this.edges = generateMFaces(1, this.dimension, this.bitmap);
         // The faces (2-faces) of the hypercube
-        this.faces = generateMFaces(2, n, this.bitmap);
+        this.faces = generateMFaces(2, this.dimension, this.bitmap);
         // A dictionary that stores m-face lists in order to avoid having to regenerate
         this.facets = {
             '1': this.edges,
