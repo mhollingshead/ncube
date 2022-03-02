@@ -1,4 +1,23 @@
-import { multiplyVectors, getBinaryStr, insertIntoStr, getNList, getRotationMatrix } from "./utils/utils.js";
+// Utility function for multiplying two matrices
+const multiplyVectors = (m1, m2) => m1.map((r, i) => m2[0].map((_, j) => r.reduce((acc, _, n) => acc + m1[i][n] * m2[n][j], 0)));
+
+// Utility function that converts a decimal number to a padded binary string
+const getBinaryStr = (n, padding = 0) => (new Array(padding).fill("0").join("") + (n >>> 0).toString(2)).slice(-padding);
+
+// Utility function that inserts a character into index ind of string str
+const insertIntoStr = (char, str, ind) => `${str.slice(0, ind)}${char}${str.slice(ind)}`;
+
+// Utility function to get the list of integers from 0 to n-1
+const getNList = n => Object.keys(new Array(n).fill(true)).map(key => parseInt(key));
+
+// Utility function that generates a rotation matrix for some fixed axis, plane, hyperplane, etc.
+const getRotationMatrix = (n, a, fix) => new Array(n).fill(new Array(n).fill(0)).map((r, i) => 
+    r.map((_, j) => 
+        (j === fix && i === fix) ? Math.cos(a) : (j === fix + 1 && i === fix) ? -Math.sin(a) :
+        (j === fix && i === fix + 1) ? Math.sin(a) : (j === fix + 1 && i === fix + 1) ? Math.cos(a) : 
+        (i === j) ? 1 : 0
+    )
+);
 
 /**
  * Generates all n-length combinations of elements in arr.
@@ -98,8 +117,12 @@ class Vertex extends Array {
      * @param {number} n The dimension to project the vertex into
      * @returns {Vertex} The vertex projected into dimension n
      */
-    project(n) {
-        return this.slice(0, n);
+    project(n = 2, e) {
+        if (e) {
+            return new Vertex(...[...this].slice(0, n).map(c => c * (1 / (e - this[this.length - 1]))));
+        } else {
+            return new Vertex(...[...this].slice(0, n).map(c => e ? c * (1 / (e - d)) : c));
+        }
     }
 
     /**
@@ -108,16 +131,7 @@ class Vertex extends Array {
      */
     toMatrix() {
         if (this[0].length === 1) return;
-        return this.map(coordinate => [coordinate]);
-    }
-
-    /**
-     * Converts the vertex to its vector representation
-     * @returns The vector representation of the vertex
-     */
-    toVector() {
-        if (typeof this[0] === 'number')
-        return this.map(coordinate => coordinate[0]);
+        return [...this].map(coordinate => [coordinate]);
     }
 }
 
@@ -128,7 +142,7 @@ class Vertex extends Array {
  * @param {Object} attr Any additional methods or attributes to be added to the n-cube
  * @returns A new n-cube object
 */
-export default class NCube {
+class NCube {
     constructor(n = 0, boundingCoordinates = [-1, 1], attr = {}) {
         this.dimension = Math.round(n);
         // The binary representations of the n-dimensional hypercube's vertices
