@@ -216,7 +216,7 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
         * NCube.[**reset()**](#ncubereset)
 * [**Vertex**](#vertex)
     * Methods
-        * Vertex.[**transpose()**](#vertextranspose)
+        * Vertex.[**project()**](#vertexproject)
         * Vertex.[**toMatrix()**](#vertextomatrix)
 
 ### NCube
