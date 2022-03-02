@@ -138,7 +138,7 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
     <img src="./assets/ncubethree.gif" width="250" height="250" />
 </div>
 
-[Rotating](#ncuberotate) a 4-dimensional hypercube *(tesseract)* and [projecting](#vectorproject) it into 3-dimensional space.
+[Rotating](#ncuberotate) a 4-dimensional hypercube *(tesseract)* and [projecting](#vertexproject) it into 3-dimensional space.
 
 ```html
 <script src="path/to/three.min.js"></script>
