@@ -11,7 +11,7 @@ A light-weight JavaScript library that dynamically generates [n-dimensional hype
 
 ## Getting Started
 ### Demo
-See the [**interactive demo**](#) for interactive n-dimensional rotation demos and sample usage.
+See the [**interactive demo**](https://mhollingshead.github.io/ncube/) for interactive n-dimensional rotation demos and sample usage.
 
 ### Browser
 ```html
@@ -508,6 +508,8 @@ Rotates the vertices of an n-cube by angle `a` over the specified cartesian coor
   |  0      0     1|   |0  sin θ   cos θ|   |-sin θ  0  cos θ|   |z|
   ```
   (rotating vertices [*x*, *y*, *z*] about the *z*, *x*, and *y* axes respectively by an angle of *θ*)
+
+  See the [demo](https://mhollingshead.github.io/ncube/) for interactive examples.
 
 #### Examples
 ```javascript
