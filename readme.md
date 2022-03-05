@@ -10,11 +10,14 @@ A light-weight JavaScript library that dynamically generates [n-dimensional hype
 </div>
 
 ## Getting Started
-###  Browser:
+### Demo
+See the [**interactive demo**](#) for interactive n-dimensional rotation demos and sample usage.
+
+### Browser
 ```html
 <script src="ncube.min.js"></script>
 <script>
-	const nCube = new NCube(4);
+    const nCube = new NCube(4);
 </script>
 ```
 
@@ -50,20 +53,18 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
 
     // Draw all edges
     nCube.edges.forEach(edge => {
-        const [p1, p2] = edge.map(to2d);
-
         // https://svgjs.dev/docs/3.0/shape-elements/#svg-line
-        svg.line(...p1, ...p2)
+        // line(x1, y1, x2, y2)
+        svg.line(...edge.map(to2d).flat())
             .opacity(0.5)
             .stroke({ color: '#4287f5' });
     });
-
+    
     // Paint all faces
     nCube.faces.forEach(face => {
-        const [p1, p2, p3, p4] = face.map(to2d);
-
         // https://svgjs.dev/docs/3.0/shape-elements/#svg-polygon
-        svg.polygon(`${p2.join(',')} ${p4.join(',')} ${p3.join(',')} ${p1.join(',')}`)
+        // polygon('x1,y1 x2,y2 x3,y3 x4,y4')
+        svg.polygon(face.map(v => to2d(v).join(',')).join(' '))
             .opacity(0.075)
             .fill('#4287f5')
     });
@@ -86,31 +87,24 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
     const svg = SVG().addTo(document.body).size(width, height);
 
     // Converts a Vertex to a 2d point on the SVG
-    const to2d = v => [
-        100 + v[0] + v[2] / 2 + v[3] / 2, 
-        100 + v[1] - v[2] / 2 + v[3] / 2
-    ];
+    const to2d = v => [100 + v[0] + v[2] / 2 + v[3] / 2, 100 + v[1] - v[2] / 2 + v[3] / 2];
 
     // Create a 4-dimensional hypercube (a tesseract) with bounding coordinates -25, 25
     const nCube = new NCube(4, [-25, 25], {
-        drawEdges: function() {
+        draw: function() {
             // Draw all edges
             this.edges.forEach(edge => {
-                const [p1, p2] = edge.map(to2d);
-
                 // https://svgjs.dev/docs/3.0/shape-elements/#svg-line
-                svg.line(...p1, ...p2)
+                // line(x1, y1, x2, y2)
+                svg.line(...edge.map(to2d).flat())
                     .opacity(0.5)
                     .stroke({ color: '#4287f5' });
             });
-        },
-        paintFaces: function() {
             // Paint all faces
             this.faces.forEach(face => {
-                const [p1, p2, p3, p4] = face.map(to2d);
-
                 // https://svgjs.dev/docs/3.0/shape-elements/#svg-polygon
-                svg.polygon(`${p2.join(',')} ${p4.join(',')} ${p3.join(',')} ${p1.join(',')}`)
+                // polygon('x1,y1 x2,y2 x3,y3 x4,y4')
+                svg.polygon(face.map(v => to2d(v).join(',')).join(' '))
                     .opacity(0.075)
                     .fill('#4287f5')
             });
@@ -120,12 +114,8 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
     let angle = 0;
     const rotate = setInterval(() => {
         svg.clear();
-        // Reset the hypercube and rotate over ZW, XY, and YZ planes
-        nCube.reset().rotate(angle/100, [0, 2, 3]);
-
-        nCube.drawEdges();
-        nCube.paintFaces();
-        
+        // Reset the hypercube, rotate over ZW, XY, and YZ planes, and draw
+        nCube.reset().rotate(angle/100, [[0, 1], [2, 3], [3, 1]]).draw();    
         // Restart rotation when angle = 630
         angle = angle === 629 ? 0 : angle + 2;
     }, 25);
@@ -182,18 +172,18 @@ Graphing the [edges](ncubeedges) and [faces](ncubefaces) of a 3-dimensional hype
     });
 
     let angle = 0;
-    const render = () => {
-        requestAnimationFrame(render);
+    const rotate = () => {
+        requestAnimationFrame(rotate);
 
         // Each frame, reset and rotate the hypercube on the ZW and XY planes, 
         // then render its edges
-        nCube.reset().rotate(angle/100, [0, 2]).renderEdges();
+        nCube.reset().rotate(angle/100, [[0, 1], [2, 3]]).renderEdges();
             
         // Restart the rotation when angle = 630
         angle = angle === 629 ? 0 : angle + 2;
         renderer.render(scene, camera);
     };
-    render();
+    rotate();
 </script>
 ```
 
@@ -506,16 +496,18 @@ Returns an [NCube](#ncube) (itself)
 Rotates the vertices of an n-cube by angle `a` over the specified cartesian coordinates (axes in n-dimensional space) `axes`. Returns itself to allow for chaining of operations.
 
 #### Parameters
-* `a` ([Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)) The angle by which to rotate the n-cube's vertices. **Optional**, `0` by default.
-* `axes` ([Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>) An array of indexes representing the axes over which to rotate the n-cube's vertices *(the axis of freedom)*. **Optional**, `[0, 1, ..., n-1]` by default *(all elementary rotations)*.
-  
-  **For example**, `new NCube(3).rotate(θ, [0, 1])` would result in the following mutation for all vertices:
+* `a` ([Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)) The angle in radians by which to rotate the n-cube's vertices. **Optional**, `0` by default.
+* `axes` ([Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)>>) An Array of Array(2)s of Numbers that represent the desired rotations. Each Array represents the axes of freedom in a given rotation and are used to generate the corresponding [Elemental Rotation Matrix](https://en.wikipedia.org/wiki/Rotation_matrix#:~:text=A%20basic%20rotation%20(also%20called,which%20codifies%20their%20alternating%20signs.). **Optional**, `[ [0, 1], [1, 2], ..., [n-1, n] ]` by default *(all elemental rotations)*.
+
+  **For Example**, for a 4-cube, `[0, 1]` would represent a rotation about the ZW-plane as the Z-axis *(2)* and W-axis *(3)* are fixed while the X-axis *(0)* and Y-axis *(1)* are free.
+
+  **Another example**, `new NCube(3).rotate(θ, [ [0, 1], [1, 2], [2, 0] ])` would result in the following mutation for all vertices `[x, y, z]`:
   ```
-  |cos θ  -sin θ  0|   |1    0      0   |   |x|
-  |sin θ   cos θ  0| * |0  cos θ  -sin θ| * |y|
-  |  0      0     1|   |0  sin θ   cos θ|   |z|
+  |cos θ  -sin θ  0|   |1    0      0   |   | cos θ  0  sin θ|   |x|
+  |sin θ   cos θ  0| * |0  cos θ  -sin θ| * |   0    1   0   | * |y|
+  |  0      0     1|   |0  sin θ   cos θ|   |-sin θ  0  cos θ|   |z|
   ```
-  (rotating vertices [*x*, *y*, *z*] about the *z* and *x* axes by an angle of *θ*)
+  (rotating vertices [*x*, *y*, *z*] about the *z*, *x*, and *y* axes respectively by an angle of *θ*)
 
 #### Examples
 ```javascript
@@ -529,7 +521,7 @@ console.log(nCube.vertices);
 // ]
 
 // Rotate vertices [x, y, z, w] about the ZW, XW, and XY planes by an angle of π/4
-nCube.rotate(Math.PI/4, [0, 1, 2]);
+nCube.rotate(Math.PI/4, [ [0, 1], [1, 2], [2, 3]]);
 console.log(nCube.vertices);
 // [
 //   Vertex(4) [0, 0, 0, 0],
@@ -549,7 +541,7 @@ console.log(nCube.vertices);
 // ]
 
 // Rotate vertices [x, y, z, w, v] about the XYV hyperplane by an angle of π/4
-nCube.rotate(Math.PI/4, [2]);
+nCube.rotate(Math.PI/4, [ [2, 3] ]);
 console.log(nCube.vertices);
 // [
 //   Vertex(5) [0, 0, 0, 0, 0],

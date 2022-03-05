@@ -1,64 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NCube.js</title>
-</head>
-<body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.1/svg.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="ncube.js"></script>
-    <script>
-        // Set up our Three.js environment and create our line material
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 200 / 200, 0.1, 1000);
-        const material = new THREE.LineBasicMaterial({ color: "#4287f5" });
-        const renderer = new THREE.WebGLRenderer({ alpha: true }); 
-        scene.rotateX(-Math.PI / 2), camera.position.z = 1;
-        renderer.setClearColor(0x000000, 0), renderer.setSize(300, 300);
-        document.body.appendChild(renderer.domElement);
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="./demo/styles.css">
+        <title>NCube.js Demo</title>
+    </head>
+    <body>
+        <section class="markdown-body">
+            <h1>NCube.js <span style="font-weight: 400;">Demo</span></h1>
+            <p>Feel free to have a look at the interactive demo and/or samples below. Performance may vary depending on dimension, faces rendered, and number of rotations applied. See the <a href="https://github.com/mhollingshead/ncube#--------ncubejs" target="_blank">NCube.js GitHub</a> for more information.</p>
+        </section>
+        <section class="dashboard">
+            <div class="markdown-body" id="interactive-demo">
+                <h2>Interactive Demo</h2>
+            </div>
+            <div id="demo">
+                <div id="options">
+                    <form>
+                        <div class="markdown-body" style="padding: 0.5rem 0">
+                            <h4>Cube</h4>
+                        </div>
+                        <table class="options-table">
+                            <tr>
+                                <td>Dimension</td>
+                                <td><input type="number" min="2" max="8" value="4" id="dimension" /></td>
+                            </tr>
+                            <tr>
+                                <td>Bounds</td>
+                                <td>
+                                    <input type="number" min="-20" max="20" value="-6" id="bound1" style="width: 45px" />
+                                    <input type="number" min="-20" max="20" value="6" id="bound2" style="width: 45px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 1rem"></tr>
+                        </table>
+                        <table class="options-table">
+                            <tr class="label">
+                                <td>Faces</td>
+                                <td>Opacity</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" checked id="vertices-visible" /> Vertices</td>
+                                <td><input type="number" min="0" max="1" step="0.05" value="1" id="vertices-opacity" /></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" checked id="edges-visible" /> Edges</td>
+                                <td><input type="number" min="0" max="1" step="0.05" value="0.5" id="edges-opacity" /></td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" checked id="faces-visible" /> Faces</td>
+                                <td><input type="number" min="0" max="1" step="0.01" value="0.1" id="faces-opacity" /></td>
+                            </tr>
+                            <tr style="height: 1rem"></tr>
+                            <tr class="label">
+                                <td colspan="2"><span id="axes-label">Planes</span> of Rotation</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" id="rotations"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <button id="select-all-rotations">Select All</button>
+                                    <button id="deselect-all-rotations">Deselect All</button>
+                                </td>
+                            </tr>
+                            <tr style="height: 0.5rem"></tr>
+                        </table>
+                        <div class="markdown-body" style="padding: 0.5rem 0">
+                            <h4>Animation</h4>
+                        </div>
+                        <table class="options-table">
+                            <tr>
+                                <td>Frames/Second</td>
+                                <td><input type="number" id="animation-fps" min="0.5" max="100" value="25" step="0.5" /></td>
+                            </tr>
+                            <tr>
+                                <td>Degrees/Frame</td>
+                                <td><input type="number" id="animation-degrees" min="1" max="360" value="1" step="1" /></td>
+                            </tr>
+                            <tr style="height: 0.5rem"></tr>
+                        </table>
+                        <div class="markdown-body" style="padding: 0.5rem 0">
+                            <h4>Grid</h4>
+                        </div>
+                        <div>
+                            <input type="checkbox" checked id="axes-visible" /> Show Axes
+                        </div>
+                        <div>
+                            <input type="checkbox" checked id="axes-labels" /> Show Labels
+                        </div>
+                        <div>
+                            <input type="checkbox" checked id="gridlines-visible" /> Show Gridlines
+                        </div>
+                        <div>
+                            <input type="checkbox" id="axes-color" /> Color Axes
+                        </div>
+                        <div>
+                            <input type="checkbox" id="gridlines-color" /> Color Gridlines
+                        </div>
+                    </form>
+                </div>
+                <div id="display">
+                    <div id="ncube">
+                        <div id="gridSVG"></div>
+                        <div id="cubeSVG"></div>
+                    </div>
+                    <div style="display: flex;">
+                        <button id="play-rotation"><i class="fa fa-play"></i></button>
+                        <input type="range" min="0" max="360" step="1" id="angle-slider" value="0" />
+                        <div style="display: flex;"><input type="number" min="0" max="360" step="1" id="angle-input"value="0" style="width: 50px" />°</div>
+                    </div>
+                    <div class="markdown-body" style="margin-top: 1rem">
+                        <h4>JavaScript</h4>
+                        <pre><span class="pl-k">const</span> <span class="pl-s1">nCube</span> <span class="pl-c1">=</span> <span class="pl-k">new</span> <span class="pl-v">NCube</span><span class="pl-kos">(</span><span class="pl-c1" id="code-dimension">4</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-c1" id="code-bound1">-60</span><span class="pl-kos">,</span> <span class="pl-c1" id="code-bound2">60</span><span class="pl-kos">]</span><span class="pl-kos">)</span><span class="pl-kos">;</span><br/><span class="pl-s1">nCube</span><span class="pl-kos">.</span><span class="pl-en">rotate</span><span class="pl-kos">(</span><span class="pl-c1" id="code-angle">0</span> <span class="pl-c1">*</span> <span class="pl-v">Math</span><span class="pl-kos">.</span><span class="pl-c1">PI</span> <span class="pl-c1">/</span> <span class="pl-c1">180</span><span class="pl-kos">,</span> <span class="pl-kos" id="code-rotations">[[<span class="pl-c1">0</span>, <span class="pl-c1">1</span>], [<span class="pl-c1">0</span>, <span class="pl-c1">2</span>], [<span class="pl-c1">0</span>, <span class="pl-c1">3</span>], [<span class="pl-c1">1</span>, <span class="pl-c1">2</span>], [<span class="pl-c1">1</span>, <span class="pl-c1">3</span>], [<span class="pl-c1">2</span>, <span class="pl-c1">3</span>]]</span><span class="pl-kos">);</span></pre>               
+                        <p style="font-size: 0.85rem;"><i>(See <a href="https://github.com/mhollingshead/ncube#documentation" target="_blank">documentation</a>)</i></p>
+                        <h4>Additional Information <span style="cursor: pointer; font-weight: 400;" onclick="this.innerHTML = this.innerHTML === '+' ? '-' : '+'; document.querySelector('#info').classList.toggle('hidden')">+</span></h4>
+                        <div id="info" class="hidden">
+                            <table style="font-size: 0.85rem;">
+                                <tr>
+                                    <th>Vertices</th>
+                                    <th>Edges</th>
+                                    <th>Faces</th>
+                                    <th>Cells</th>
+                                    <th>4-Faces</th>
+                                    <th>5-Faces</th>
+                                    <th>6-Faces</th>
+                                    <th>7-Faces</th>
+                                    <th>8-Faces</th>
+                                </tr>
+                                <tr id="metadata-faces">
+                                    <td>16</td>
+                                    <td>32</td>
+                                    <td>24</td>
+                                    <td>8</td>
+                                    <td>1</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+                            <table style="font-size: 0.85rem;">
+                                <tr>
+                                    <th>Volume</th>
+                                    <th>Surface</th>
+                                </tr>
+                                <tr>
+                                    <td id="volume"></td>
+                                    <td id="surface"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <div class="markdown-body" style="margin-bottom: 2rem;">
+                <h2>Sample Rotations</h2>
+            </div>
+            <div class="samples">
+                <div class="cube">
+                    <div class="markdown-body">
+                        <h3>SVG.js</h3>
+                        <p>Drawing 4-dimensional hypercube rotations on a 4D graph.</p>
+                    </div>
+                    <div class="ncube"></div>
+                    <div class="controller">
+                        <button class="play"><i class="fa fa-play"></i></button><input type="range" min="0" max="360" step="1" class="angle" value="0" />
+                    </div>
+                    <p style="font-size: 0.85rem;"><i>(View <a href="https://github.com/mhollingshead/ncube#rotations-with-svgjs" target="_blank">source code</a>)</i></p>
+                </div>
+                <div class="cube">
+                    <div class="markdown-body">
+                        <h3>Three.js</h3>
+                        <p>Projecting 4-dimensional hypercube rotations into 3-dimensional space.</p>
+                    </div>
+                    <div class="ncube"></div>
+                    <div class="controller">
+                        <button class="play"><i class="fa fa-play"></i></button><input type="range" min="0" max="360" step="1" class="angle" value="0" />
+                    </div>
+                    <p style="font-size: 0.85rem;"><i>(View <a href="https://github.com/mhollingshead/ncube#rotations-with-threejs" target="_blank">source code</a>)</i></p>
+                </div>
+            </div>
+        </section>
 
-        // Create an array to store our edge geometries
-        const edges = [];
-
-        // Create a 4-dimensional hypercube
-        const nCube = new NCube(4, [-1, 1], {
-            renderEdges: function() {
-                // Render each edge
-                this.edges.forEach((edge, i) => {
-                    // Create new geometry with the 3-dimensional projections of the verticies in the edge
-                    const geometry = new THREE.BufferGeometry().setFromPoints(
-                        edge.map(vertex => new THREE.Vector3(...vertex.project(3, 4)))
-                    );
-
-                    // Either add a new line to the edge geometry array or update the existing geometry
-                    if (edges[i]) {
-                        edges[i].geometry.dispose();
-                        edges[i].geometry = geometry;
-                    } else {
-                        const line = new THREE.Line(geometry, material);
-                        edges.push(line);
-                        scene.add(line);
-                    }
-                });
-            }
-        });
-
-        let angle = 0;
-        const render = () => {
-            if (angle < 630) {
-                requestAnimationFrame(render);
-            }
-
-            // Each frame, reset and rotate the hypercube on the ZW and XY planes, then render its edges
-            nCube.reset().rotate(angle/100, [0, 2]).renderEdges();
-            
-            // Restart the rotation when angle = 630
-            angle = angle === 629 ? 0 : angle + 2;
-            renderer.render(scene, camera);
-        };
-    </script>
-</body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.1/svg.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src="ncube.min.js"></script>
+        <script src="./demo/demo.js"></script>
+        <script src="./demo/samples.js"></script>
+    </body>
 </html>

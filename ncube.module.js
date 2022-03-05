@@ -1,4 +1,38 @@
-import { multiplyVectors, getBinaryStr, insertIntoStr, getNList, getRotationMatrix } from "./utils/utils.js";
+// Utility function for multiplying two matrices
+const multiplyVectors = (m1, m2) => m1.map((r, i) => m2[0].map((_, j) => r.reduce((acc, _, n) => acc + m1[i][n] * m2[n][j], 0)));
+
+// Utility function that converts a decimal number to a padded binary string
+const getBinaryStr = (n, padding = 0) => (new Array(padding).fill("0").join("") + (n >>> 0).toString(2)).slice(-padding);
+
+// Utility function that inserts a character into index ind of string str
+const insertIntoStr = (char, str, ind) => `${str.slice(0, ind)}${char}${str.slice(ind)}`;
+
+// Utility function to get the list of integers from 0 to n-1
+const getNList = n => Object.keys(new Array(n).fill(true)).map(key => parseInt(key));
+
+// Utility function that generates a rotation matrix for some fixed axis, plane, hyperplane, etc.
+const getRotationMatrix = (n, a, free) => {
+    const matrix = new Array(n).fill().map((_, i) => {
+        const row = new Array(n).fill(0);
+        row[i] = 1;
+        return row;
+    });
+    if (free[0] < n) matrix[free[0]][free[0]] = Math.cos(a);
+    if (free[1] && free[1] < n) matrix[free[1]][free[1]] = Math.cos(a);
+    if (free[1] && free[0] < n && free[1] < n) {
+        matrix[free[0]][free[1]] = -Math.sin(a);
+        matrix[free[1]][free[0]] = Math.sin(a);
+    }
+    return matrix;
+}
+
+// Utility function to swap two array indices
+const swapInd = (arr, i, j) => {
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+    return arr;
+}
 
 /**
  * Generates all n-length combinations of elements in arr.
@@ -82,7 +116,7 @@ const generateMFaces = (m, n, bitmap) => {
                 }
                 orientation.push(bitmap[bitCode]);
             }
-            orientations.push(orientation);
+            orientations.push(swapInd(orientation, 2**m - 1, 2**m - 2));
         }
     }
     return orientations;
@@ -96,12 +130,15 @@ class Vertex extends Array {
     /**
      * Projects a vertex into dimension n
      * @param {number} n The dimension to project the vertex into
+     * @param {number} e A number *epsilon* used to scale vertices for perspecive projections.
      * @returns {Vertex} The vertex projected into dimension n
      */
     project(n = 2, e) {
-        const d = this[this.length - 1] * 1;
-        if (e) console.log(true);
-        return new Vertex(...[...this].slice(0, n).map(c => e ? c * (1 / (e - d)) : c));
+        if (e) {
+            return new Vertex(...[...this].slice(0, n).map(c => c * (1 / (e - this[this.length - 1]))));
+        } else {
+            return new Vertex(...[...this].slice(0, n).map(c => e ? c * (1 / (e - d)) : c));
+        }
     }
 
     /**
@@ -126,6 +163,8 @@ export default class NCube {
         this.dimension = Math.round(n);
         // The binary representations of the n-dimensional hypercube's vertices
         this.bits = generateBits(this.dimension);
+        // The bounds of the hypercube
+        this.boundingCoordinates = boundingCoordinates;
         // The mapping between the hypercube's vertices and their binary representation
         this.bitmap = generateBitmap(this.bits, boundingCoordinates);
         // A backup bitmap used for resetting to default values
@@ -203,19 +242,20 @@ export default class NCube {
 
     /**
      * Rotates the n-cubes vertex coordinates on the axes provided by angle a
-     * @param {number} a The angle by which to rotate the n-cube
-     * @param {Array<number>} axes The axes, planes, hyperplanes, etc. upon which to rotate the n-cube
+     * @param {number} a The angle in radians by which to rotate the n-cube
+     * @param {Array<Array<number>>} rotations An Array of Array(2)s of Numbers representing a series of rotations. The numbers in each Array represent an index of some axis of freedom used to generate a rotation matrix. For example, in dimension 4, [0, 1] represents a rotation about the ZW plane as the X axis (index 0) and Y axis (index 1) are free while the Z and W axes are fixed.
      * @returns Self
      */
-    rotate(a, axes = getNList(this.dimension)) {
+    rotate(a = 0, rotations = getCombinations(2, getNList(this.dimension), true)) {
         // Loop through each vertex
+        if (typeof rotations[0] === 'number') rotations = rotations.map(axis => [axis, axis + 1]);
         this.bits.forEach(key => {
             // Rotate over all axes provided by reducing the array of axes
-            const rotated = axes.reduce((acc, axis) => 
+            const rotated = rotations.reduce((acc, axes) => 
                 // Multiply the current vertex by the current axis's rotation matrix
                 new Vertex(
                     ...multiplyVectors(
-                        getRotationMatrix(this.dimension, a, axis), 
+                        getRotationMatrix(this.dimension, a, axes), 
                         acc.toMatrix()
                     ).flat()
                 ), this.bitmap[key]
