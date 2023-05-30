@@ -1,3 +1,7 @@
+body {
+  background-color: #fff;
+}
+
 .markdown-body {
     color-scheme: light;
     --color-prettylights-syntax-comment: #6e7781;
